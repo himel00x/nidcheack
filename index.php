@@ -1,5 +1,5 @@
 <?php
-// যদি NID এবং DOB ইনপুট দেওয়া না থাকে, তবে ইনপুট ফর্ম পেজটি দেখাবে
+// যদি NID এবং DOB ইনপুট দেওয়া না থাকে, তবে ইনপুট ফর্ম পেজটি দেখাবে
 if (!isset($_GET['nid']) || !isset($_GET['dob']) || empty(trim($_GET['nid'])) || empty(trim($_GET['dob']))) {
 ?>
 <!DOCTYPE html>
@@ -90,7 +90,7 @@ if (!isset($_GET['nid']) || !isset($_GET['dob']) || empty(trim($_GET['nid'])) ||
     exit;
 }
 
-// ইনপুট পাওয়া গেলে আপনার মূল কোড রান হবে
+// ইনপুট পাওয়া গেলে মূল কোড রান হবে
 if (isset($_GET['nid']) && isset($_GET['dob'])) {
     $nid_input = trim($_GET['nid']);
     $dob_input = trim($_GET['dob']);
@@ -98,7 +98,7 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     // API URL
     $apiUrl = "https://cyberbdapi.shop/sv/sv2.php?nid=" . urlencode($nid_input) . "&dob=" . urlencode($dob_input);
     
-    // cURL ব্যবহার করে নিরাপদ ও দ্রুত ডাটা ফেচিং
+    // cURL ব্যবহার করে ডাটা ফেচিং
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -109,6 +109,13 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     curl_close($ch);
 
     $responseData = json_decode($response, true);
+
+    // --- ডিবাগিং অংশ: API থেকে আসল কী কী ডেটা আসছে তা দেখতে ---
+    echo "<pre style='text-align: left; background: #fff; color: #000; padding: 25px; font-size: 14px; z-index: 99999; position: relative;'>";
+    print_r($responseData);
+    echo "</pre>";
+    exit;
+    // -------------------------------------------------------------
 
     // ডেটা হ্যান্ডলিং
     if (isset($responseData['success']) && ($responseData['success'] === true || $responseData['code'] == 200) && isset($responseData['data'])) {
