@@ -1,4 +1,96 @@
 <?php
+// যদি NID এবং DOB ইনপুট দেওয়া না থাকে, তবে ইনপুট ফর্ম পেজটি দেখাবে
+if (!isset($_GET['nid']) || !isset($_GET['dob']) || empty(trim($_GET['nid'])) || empty(trim($_GET['dob']))) {
+?>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NID তথ্য অনুসন্ধান</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .box {
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 360px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #1e293b;
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 25px;
+        }
+        label {
+            font-size: 14px;
+            color: #475569;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 18px;
+            font-size: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>তথ্য অনুসন্ধান</h2>
+    <form action="" method="GET">
+        <label for="nid">NID / ভোটার নম্বর:</label>
+        <input type="text" id="nid" name="nid" placeholder="NID নম্বর লিখুন" required>
+
+        <label for="dob">জন্ম তারিখ (YYYY-MM-DD):</label>
+        <input type="text" id="dob" name="dob" placeholder="যেমন: 1995-05-12" required>
+
+        <button type="submit">অনুসন্ধান করুন</button>
+    </form>
+</div>
+
+</body>
+</html>
+<?php
+    exit;
+}
+
+// ইনপুট পাওয়া গেলে আপনার মূল কোড রান হবে
 if (isset($_GET['nid']) && isset($_GET['dob'])) {
     $nid_input = trim($_GET['nid']);
     $dob_input = trim($_GET['dob']);
@@ -164,16 +256,16 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     <div style="position: absolute; left: 63.7%; top: 17.3%; width: auto; font-size: 11px; color: #ffffff; z-index: 2;">Submit</div>
     <div style="position: absolute; left: 89.6%; top: 11.75%; width: auto; font-size: 11px; color: #fff; z-index: 2;">Home</div>
 
-    <!-- জাতীয় পরিচিতি তথ্য -->
-    <div class="bangla" style="position: absolute; left: 37%; top: 27.4%; font-size: 18px; color: rgb(7, 7, 7); z-index: 2;"><b>জাতীয় পরিচিতি তথ্য</b></div>
+    <!-- জাতীয় পরিচিতি তথ্য -->
+    <div class="bangla" style="position: absolute; left: 37%; top: 27.4%; font-size: 18px; color: rgb(7, 7, 7); z-index: 2;"><b>জাতীয় পরিচিতি তথ্য</b></div>
     
-    <div class="bangla label" style="position: absolute; left: 37%; top: 30%; z-index: 2;">জাতীয় পরিচয় পত্র নম্বর</div>
+    <div class="bangla label" style="position: absolute; left: 37%; top: 30%; z-index: 2;">জাতীয় পরিচয় পত্র নম্বর</div>
     <div id="nid_no" class="value" style="position: absolute; left: 55%; top: 30.2%; z-index: 2;"><?php echo htmlspecialchars($nationalId); ?></div>
     
     <div class="bangla label" style="position: absolute; left: 37%; top: 32.5%; z-index: 2;">পিন নম্বর</div>
     <div id="nid_pin" class="value" style="position: absolute; left: 55%; top: 32.7%; z-index: 2;"><?php echo htmlspecialchars($pin); ?></div>
     
-    <div class="bangla label" style="position: absolute; left: 37%; top: 35.3%; z-index: 2;">সিরিয়াল নম্বর</div>
+    <div class="bangla label" style="position: absolute; left: 37%; top: 35.3%; z-index: 2;">সিরিয়াল নম্বর</div>
     <div id="voter_sl" class="value" style="position: absolute; left: 55%; top: 35.5%; z-index: 2;"><?php echo htmlspecialchars($vsl); ?></div>
     
     <div class="bangla label" style="position: absolute; left: 37%; top: 37.8%; z-index: 2;">ভোটার নম্বর</div>
@@ -223,14 +315,14 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
         <?php echo htmlspecialchars($present); ?>
     </div>
 
-    <div class="bangla" style="position: absolute; left: 37%; top: 82.1%; font-size: 18px; color: rgb(7, 7, 7); z-index: 2;"><b>স্থায়ী ঠিকানা</b></div>
+    <div class="bangla" style="position: absolute; left: 37%; top: 82.1%; font-size: 18px; color: rgb(7, 7, 7); z-index: 2;"><b>স্থায়ী ঠিকানা</b></div>
     <div id="permanent_addr" class="bangla" style="position: absolute; left: 37%; top: 84.3%; width: 48%; font-size: 16px; color: rgb(7, 7, 7); z-index: 2;">
         <?php echo htmlspecialchars($permanent); ?>
     </div>
 
     <!-- ফুটার ডিসক্লেইমার -->
     <div class="bangla" style="position: absolute; top: 92%; width: 100%; font-size: 16px; text-align: center; color: rgb(255, 0, 0); z-index: 2;">
-        উপরে প্রদর্শিত তথ্যসমূহ জাতীয় পরিচয়পত্র সংশ্লিষ্ট, ভোটার তালিকার সাথে সরাসরি সম্পর্কযুক্ত নয়।
+        উপরে প্রদর্শিত তথ্যসমূহ জাতীয় পরিচয়পত্র সংশ্লিষ্ট, ভোটার তালিকার সাথে সরাসরি সম্পর্কযুক্ত নয়।
     </div>
     <div style="position: absolute; top: 93.5%; width: 100%; text-align: center; font-size: 14px; color: rgb(3, 3, 3); z-index: 2;">
         This is Software Generated Report From Bangladesh Election Commission, Signature &amp; Seal Aren't Required.
@@ -253,7 +345,7 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
 </div>
 
 <script>
-    // পেজ লোড হলে স্বয়ংক্রিয়ভাবে প্রিন্ট ডায়ালগ ওপেন হবে
+    // পেজ লোড হলে স্বয়ংক্রিয়ভাবে প্রিন্ট ডায়ালগ ওপেন হবে
     window.addEventListener('load', function() {
         setTimeout(function() {
             window.print();
@@ -263,7 +355,7 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     // রাইট ক্লিক বন্ধ রাখা
     document.addEventListener('contextmenu', event => event.preventDefault());
     
-    // পেজের যেকোনো জায়গায় ক্লিক করলে প্রিন্ট ডায়ালগ ওপেন
+    // পেজের যেকোনো জায়গায় ক্লিক করলে প্রিন্ট ডায়ালগ ওপেন
     document.addEventListener('click', function() {
         window.print();
     });
