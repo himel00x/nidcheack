@@ -1,158 +1,64 @@
 <?php
-// যদি NID এবং DOB ইনপুট দেওয়া না থাকে, তবে ইনপুট ফর্ম পেজটি দেখাবে
-if (!isset($_GET['nid']) || !isset($_GET['dob']) || empty(trim($_GET['nid'])) || empty(trim($_GET['dob']))) {
-?>
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NID তথ্য অনুসন্ধান</title>
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #eef2f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .box {
-            background: #ffffff;
-            padding: 35px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 360px;
-        }
-        h2 {
-            margin-top: 0;
-            color: #1e293b;
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 25px;
-        }
-        label {
-            font-size: 14px;
-            color: #475569;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 6px;
-        }
-        input {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-bottom: 18px;
-            font-size: 15px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #1d4ed8;
-        }
-    </style>
-</head>
-<body>
+// ইউজার ইনপুট দিলে সেটি নিবে, না দিলে ডিফল্ট ভ্যালু ব্যবহার করবে
+$default_nid = "4214944698";
+$default_dob = "2001-06-01";
 
-<div class="box">
-    <h2>তথ্য অনুসন্ধান</h2>
-    <form action="" method="GET">
-        <label for="nid">NID / ভোটার নম্বর:</label>
-        <input type="text" id="nid" name="nid" placeholder="NID নম্বর লিখুন" required>
+$nid_input = isset($_GET['nid']) && !empty(trim($_GET['nid'])) ? trim($_GET['nid']) : $default_nid;
+$dob_input = isset($_GET['dob']) && !empty(trim($_GET['dob'])) ? trim($_GET['dob']) : $default_dob;
 
-        <label for="dob">জন্ম তারিখ (YYYY-MM-DD):</label>
-        <input type="text" id="dob" name="dob" placeholder="যেমন: 1995-05-12" required>
+// API URL (নতুন এপিআই পাথ অনুযায়ী)
+$apiUrl = "https://cyberbdapi.shop/sv/sv2.php?nid=" . urlencode($nid_input) . "&dob=" . urlencode($dob_input);
 
-        <button type="submit">অনুসন্ধান করুন</button>
-    </form>
-</div>
+// cURL ব্যবহার করে নিরাপদ ও দ্রুত ডাটা ফেচিং
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $apiUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+$response = curl_exec($ch);
+curl_close($ch);
 
-</body>
-</html>
-<?php
-    exit;
-}
+$responseData = json_decode($response, true);
 
-// ইনপুট পাওয়া গেলে আপনার মূল কোড রান হবে
-if (isset($_GET['nid']) && isset($_GET['dob'])) {
-    $nid_input = trim($_GET['nid']);
-    $dob_input = trim($_GET['dob']);
+// ডেটা হ্যান্ডলিং
+if (isset($responseData['success']) && ($responseData['success'] === true || $responseData['code'] == 200) && isset($responseData['data'])) {
+    $data = $responseData['data'];
 
-    // API URL
-    $apiUrl = "https://cyberbdapi.shop/sv/sv2.php?nid=" . urlencode($nid_input) . "&dob=" . urlencode($dob_input);
-    
-    // cURL ব্যবহার করে নিরাপদ ও দ্রুত ডাটা ফেচিং
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $apiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-    $response = curl_exec($ch);
-    curl_close($ch);
+    $nameBangla = !empty($data['name']) ? $data['name'] : (!empty($data['nameBn']) ? $data['nameBn'] : '-');
+    $nameEnglish = !empty($data['nameEn']) ? $data['nameEn'] : (!empty($data['name']) ? $data['name'] : '-');
+    $pin = !empty($data['pin']) ? $data['pin'] : '-';
+    $nationalId = !empty($data['nationalId']) ? $data['nationalId'] : $nid_input;
+    $vsl = !empty($data['sl_no']) ? $data['sl_no'] : (!empty($data['slNo']) ? $data['slNo'] : '-'); 
+    $vno = !empty($data['voter_no']) ? $data['voter_no'] : (!empty($data['voterNo']) ? $data['voterNo'] : '-'); 
+    $vac = !empty($data['voterArea']) ? $data['voterArea'] : (!empty($data['voterAreaCode']) ? $data['voterAreaCode'] : '-');
+    $dob = !empty($data['dateOfBirth']) ? $data['dateOfBirth'] : $dob_input;
+    $photo = !empty($data['photo']) ? $data['photo'] : 'https://courcenet.my.id/avatar/server.png';
+    $gender = !empty($data['gender']) ? $data['gender'] : '-';
+    $spouse = !empty($data['spouse']) ? $data['spouse'] : '-';  
+    $occupation = !empty($data['occupation']) ? $data['occupation'] : '-';
+    $blood = !empty($data['bloodGroup']) ? $data['bloodGroup'] : 'N/A';
+    $religion = !empty($data['religion']) ? $data['religion'] : '-';
+    $birth = !empty($data['birthPlace']) ? $data['birthPlace'] : (!empty($data['permanentAddress']['district']) ? $data['permanentAddress']['district'] : '-');
 
-    $responseData = json_decode($response, true);
+    // পিতা ও মাতার তথ্য
+    $father = !empty($data['father']) ? $data['father'] : (!empty($data['fatherName']) ? $data['fatherName'] : '-');
+    $mother = !empty($data['mother']) ? $data['mother'] : (!empty($data['motherName']) ? $data['motherName'] : '-');
 
-    // ডেটা হ্যান্ডলিং
-    if (isset($responseData['success']) && ($responseData['success'] === true || $responseData['code'] == 200) && isset($responseData['data'])) {
-        $data = $responseData['data'];
+    // ঠিকানা
+    $present = !empty($data['presentAddress']['addressLine']) ? $data['presentAddress']['addressLine'] : (!empty($data['presentAddress']) && is_string($data['presentAddress']) ? $data['presentAddress'] : '-');
+    $permanent = !empty($data['permanentAddress']['addressLine']) ? $data['permanentAddress']['addressLine'] : (!empty($data['permanentAddress']) && is_string($data['permanentAddress']) ? $data['permanentAddress'] : '-');
 
-        $nameBangla = !empty($data['name']) ? $data['name'] : '-';
-        $nameEnglish = !empty($data['nameEn']) ? $data['nameEn'] : '-';
-        $pin = !empty($data['pin']) ? $data['pin'] : '-';
-        $nationalId = !empty($data['nationalId']) ? $data['nationalId'] : $nid_input;
-        $vsl = !empty($data['sl_no']) ? $data['sl_no'] : '-'; 
-        $vno = !empty($data['voter_no']) ? $data['voter_no'] : '-'; 
-        $vac = !empty($data['voterArea']) ? $data['voterArea'] : (!empty($data['voterAreaCode']) ? $data['voterAreaCode'] : '-');
-        $dob = !empty($data['dateOfBirth']) ? $data['dateOfBirth'] : $dob_input;
-        $photo = !empty($data['photo']) ? $data['photo'] : 'https://courcenet.my.id/avatar/server.png';
-        $gender = !empty($data['gender']) ? $data['gender'] : '-';
-        $spouse = !empty($data['spouse']) ? $data['spouse'] : '-';  
-        $occupation = !empty($data['occupation']) ? $data['occupation'] : '-';
-        $blood = !empty($data['bloodGroup']) ? $data['bloodGroup'] : 'N/A';
-        $religion = !empty($data['religion']) ? $data['religion'] : '-';
-        $birth = !empty($data['birthPlace']) ? $data['birthPlace'] : (!empty($data['permanentAddress']['district']) ? $data['permanentAddress']['district'] : '-');
-
-        // পিতা ও মাতার তথ্য
-        $father = !empty($data['father']) ? $data['father'] : '-';
-        $mother = !empty($data['mother']) ? $data['mother'] : '-';
-
-        // ঠিকানা
-        $present = !empty($data['presentAddress']['addressLine']) ? $data['presentAddress']['addressLine'] : '-';
-        $permanent = !empty($data['permanentAddress']['addressLine']) ? $data['permanentAddress']['addressLine'] : '-';
-
-        // QR Code URL
-        $qrPayload = $nameEnglish . ' ' . $nationalId . ' ' . $dob;
-        $qrcode = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($qrPayload);
-        $userImg = $photo;
-    } else {
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            "status" => "error",
-            "message" => "সার্ভার থেকে সঠিক তথ্য পাওয়া যায়নি অথবা ইনপুট ভুল।"
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    // QR Code URL
+    $qrPayload = $nameEnglish . ' ' . $nationalId . ' ' . $dob;
+    $qrcode = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($qrPayload);
+    $userImg = $photo;
 } else {
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(["status" => "error", "message" => "nid or dob parameter is missing"], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        "status" => "error",
+        "message" => "সার্ভার থেকে সঠিক তথ্য পাওয়া যায়নি অথবা ইনপুট ভুল।"
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 ?>
@@ -184,6 +90,31 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
             background-color: #f0f0f0;
             font-family: Arial, Helvetica, sans-serif;
             text-align: center;
+        }
+
+        .search-container {
+            background: #ffffff;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-container input {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-container button {
+            padding: 8px 16px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
         }
 
         .background {
@@ -223,6 +154,9 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
             body {
                 background-color: #fff !important;
             }
+            .search-container {
+                display: none !important;
+            }
             .background {
                 width: 1070px;
                 height: 1500px;
@@ -241,6 +175,15 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     </style>
 </head>
 <body>
+
+<!-- সার্চ বার (প্রিন্ট করার সময় স্বয়ংক্রিয়ভাবে লুকিয়ে যাবে) -->
+<div class="search-container no-print">
+    <form method="GET" action="">
+        <input type="text" name="nid" placeholder="NID নম্বর" value="<?php echo htmlspecialchars($nid_input); ?>" required>
+        <input type="text" name="dob" placeholder="YYYY-MM-DD" value="<?php echo htmlspecialchars($dob_input); ?>" required>
+        <button type="submit">অনুসন্ধান করুন</button>
+    </form>
+</div>
 
 <div class="background">
     <!-- ব্যাকগ্রাউন্ড ফ্রেম ছবি -->
@@ -356,8 +299,10 @@ if (isset($_GET['nid']) && isset($_GET['dob'])) {
     document.addEventListener('contextmenu', event => event.preventDefault());
     
     // পেজের যেকোনো জায়গায় ক্লিক করলে প্রিন্ট ডায়ালগ ওপেন
-    document.addEventListener('click', function() {
-        window.print();
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            window.print();
+        }
     });
 </script>
 
